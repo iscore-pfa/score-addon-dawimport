@@ -1,14 +1,12 @@
 #pragma once
-#include <score/plugins/application/GUIApplicationPlugin.hpp>
 #include <score/command/AggregateCommand.hpp>
+#include <score/plugins/application/GUIApplicationPlugin.hpp>
 namespace DawImport
 {
-class ApplicationPlugin:
-    public QObject,
-    public score::GUIApplicationPlugin
+class ApplicationPlugin : public QObject, public score::GUIApplicationPlugin
 {
 public:
-    ApplicationPlugin(const score::GUIApplicationContext& app);
+  ApplicationPlugin(const score::GUIApplicationContext& app);
 
 private:
   score::GUIElements makeGUIElements() override;
@@ -17,7 +15,6 @@ private:
 
   void generate();
 };
-
 
 inline const CommandGroupKey& CommandFactoryName()
 {

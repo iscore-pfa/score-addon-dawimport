@@ -1,24 +1,19 @@
-#include <DawImport/ApplicationPlugin.hpp>
 #include "score_addon_dawimport.hpp"
 
 #include <score/plugins/FactorySetup.hpp>
 
+#include <DawImport/ApplicationPlugin.hpp>
 #include <score_addon_dawimport_commands_files.hpp>
 
-score_addon_dawimport::score_addon_dawimport()
-{
-}
+score_addon_dawimport::score_addon_dawimport() {}
 
-score_addon_dawimport::~score_addon_dawimport()
-{
-}
+score_addon_dawimport::~score_addon_dawimport() {}
 
 score::GUIApplicationPlugin* score_addon_dawimport::make_guiApplicationPlugin(
-        const score::GUIApplicationContext& app)
+    const score::GUIApplicationContext& app)
 {
-    return new DawImport::ApplicationPlugin{app};
+  return new DawImport::ApplicationPlugin{app};
 }
-
 
 std::pair<const CommandGroupKey, CommandGeneratorMap>
 score_addon_dawimport::make_commands()

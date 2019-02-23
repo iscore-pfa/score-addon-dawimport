@@ -1,27 +1,26 @@
-#include <DawImport/ApplicationPlugin.hpp>
-
+#include <Media/ApplicationPlugin.hpp>
+#include <Media/Commands/InsertVST.hpp>
+#include <Media/Effect/EffectProcessModel.hpp>
+#include <Media/Effect/VST/VSTEffectModel.hpp>
+#include <Media/Sound/SoundModel.hpp>
+#include <Midi/Commands/AddNote.hpp>
+#include <Midi/MidiProcess.hpp>
+#include <Scenario/Commands/CommandAPI.hpp>
+#include <Scenario/Document/BaseScenario/BaseScenario.hpp>
+#include <Scenario/Document/ScenarioDocument/ScenarioDocumentModel.hpp>
 #include <Scenario/Process/Algorithms/Accessors.hpp>
 #include <Scenario/Process/Algorithms/ContainersAccessors.hpp>
 #include <Scenario/Process/ScenarioModel.hpp>
-#include <Scenario/Document/ScenarioDocument/ScenarioDocumentModel.hpp>
-#include <Scenario/Document/BaseScenario/BaseScenario.hpp>
-#include <score/document/DocumentInterface.hpp>
+
 #include <score/actions/Menu.hpp>
 #include <score/actions/MenuManager.hpp>
+#include <score/document/DocumentInterface.hpp>
+
 #include <core/document/Document.hpp>
-#include <Scenario/Commands/CommandAPI.hpp>
-
-#include <Midi/MidiProcess.hpp>
-#include <Midi/Commands/AddNote.hpp>
-
-#include <Media/Effect/EffectProcessModel.hpp>
-#include <Media/Effect/VST/VSTEffectModel.hpp>
-#include <Media/Commands/InsertVST.hpp>
-#include <Media/ApplicationPlugin.hpp>
-
-#include <Media/Sound/SoundModel.hpp>
 
 #include <QMenu>
+
+#include <DawImport/ApplicationPlugin.hpp>
 
 namespace DawImport
 {
@@ -50,26 +49,24 @@ static void generateScore(
   notes.emplace_back(0.4, 0.5, 70, 100);
   macro.submit(new Midi::ReplaceNotes(midi, notes, 55, 85, 2500ms));
 
-
   // Et un autre
-  const auto& vsts = context.applicationPlugin<Media::ApplicationPlugin>().vst_infos;
-  auto& fx_chain = macro.createProcessInNewSlot<Media::Effect::ProcessModel>(i1, {});
+  const auto& vsts
+      = context.applicationPlugin<Media::ApplicationPlugin>().vst_infos;
+  auto& fx_chain
+      = macro.createProcessInNewSlot<Media::Effect::ProcessModel>(i1, {});
 
   // On va voir les VSTs qu'il y a sur le système
-  for(const auto& vst : vsts)
+  for (const auto& vst : vsts)
   {
     // On ajoute le premier synthé qu'on trouve
     // (J'ai désactivé Carla car c'est un VST qui bug chez moi...)
-    if(vst.isSynth && vst.isValid && !vst.prettyName.contains("Carla"))
+    if (vst.isSynth && vst.isValid && !vst.prettyName.contains("Carla"))
     {
       macro.submit(new Media::InsertGenericEffect<Media::VST::VSTEffectModel>(
-                     fx_chain,
-                     QString::number(vst.uniqueID),
-                     0));
+          fx_chain, QString::number(vst.uniqueID), 0));
       break;
     }
   }
-
 
   // On connecte un cable entre le midi et le vst
   {
@@ -82,14 +79,14 @@ static void generateScore(
 
   // Et un fichier son
   const auto& i2 = macro.createIntervalAfter(scenar, s2.id(), {5000ms, y});
-  macro.createProcessInNewSlot<Media::Sound::ProcessModel>(i2, PLUGIN_SOURCE_DIR "/DawImport/resources/test.wav");
+  macro.createProcessInNewSlot<Media::Sound::ProcessModel>(
+      i2, PLUGIN_SOURCE_DIR "/DawImport/resources/test.wav");
 
   macro.commit();
 }
 
-
-ApplicationPlugin::ApplicationPlugin(const score::GUIApplicationContext& app):
-    score::GUIApplicationPlugin{app}
+ApplicationPlugin::ApplicationPlugin(const score::GUIApplicationContext& app)
+    : score::GUIApplicationPlugin{app}
 {
   m_generate = new QAction{tr("Generate a score"), nullptr};
   connect(m_generate, &QAction::triggered, this, &ApplicationPlugin::generate);
@@ -97,26 +94,28 @@ ApplicationPlugin::ApplicationPlugin(const score::GUIApplicationContext& app):
 
 score::GUIElements ApplicationPlugin::makeGUIElements()
 {
-    auto& m = context.menus.get().at(score::Menus::Export());
-    QMenu* menu = m.menu();
-    menu->addAction(m_generate);
-    return {};
+  auto& m = context.menus.get().at(score::Menus::Export());
+  QMenu* menu = m.menu();
+  menu->addAction(m_generate);
+  return {};
 }
 
 void ApplicationPlugin::generate()
 {
   auto doc = currentDocument();
-  if(!doc)
-      return;
-  Scenario::ScenarioDocumentModel& base = score::IDocument::get<Scenario::ScenarioDocumentModel>(*doc);
+  if (!doc)
+    return;
+  Scenario::ScenarioDocumentModel& base
+      = score::IDocument::get<Scenario::ScenarioDocumentModel>(*doc);
 
   const auto& baseInterval = base.baseScenario().interval();
-  if(baseInterval.processes.size() == 0)
-      return;
+  if (baseInterval.processes.size() == 0)
+    return;
 
-  auto firstScenario = dynamic_cast<Scenario::ProcessModel*>(&*baseInterval.processes.begin());
-  if(!firstScenario)
-      return;
+  auto firstScenario = dynamic_cast<Scenario::ProcessModel*>(
+      &*baseInterval.processes.begin());
+  if (!firstScenario)
+    return;
 
   Scenario::Command::Macro m{new GenerateAScore, doc->context()};
   generateScore(base, *firstScenario, m, this->context);
