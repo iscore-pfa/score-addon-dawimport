@@ -1,7 +1,8 @@
 #include <Media/ApplicationPlugin.hpp>
 #include <Media/Commands/InsertVST.hpp>
-#include <Media/Effect/EffectProcessModel.hpp>
 #include <Media/Effect/VST/VSTEffectModel.hpp>
+#include <Media/SynthChain/SynthChainModel.hpp>
+#include <Media/AudioChain/AudioChainModel.hpp>
 #include <Media/Sound/SoundModel.hpp>
 #include <Midi/Commands/AddNote.hpp>
 #include <Midi/MidiProcess.hpp>
@@ -53,7 +54,7 @@ static void generateScore(
   const auto& vsts
       = context.applicationPlugin<Media::ApplicationPlugin>().vst_infos;
   auto& fx_chain
-      = macro.createProcessInNewSlot<Media::Effect::ProcessModel>(i1, {});
+      = macro.createProcessInNewSlot<Media::SynthChain::ProcessModel>(i1, {});
 
   // On va voir les VSTs qu'il y a sur le système
   for (const auto& vst : vsts)
